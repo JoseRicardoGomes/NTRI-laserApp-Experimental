@@ -6,9 +6,10 @@ import threading as thr
 
 ##CLASS GPIO#######################################################################################################################################
 class gpioControl:
+    def __init__(self):
 
 	#setup of the pin mode as board
-	def setMode():
+	def setMode(self):
 		print("Setting up the GPIO mode as board...")
 		try:
 		gpio.setmode(gpio.board)
@@ -18,7 +19,7 @@ class gpioControl:
 			print("Setting succeful!")
 			
 #set the mode of the pins that control the base stepper##################
-    def SetModeBase():
+    def SetupBase(self):
         try:
             gpio.setup(pin11, gpio.OUT)
             gpio.setup(pin12, gpio.OUT)
@@ -28,10 +29,10 @@ class gpioControl:
             print("Base pins setup as output has failed.")
         except RuntimeError:
             print("Base pins succefuly seted up as output!")
-#############################################################################
+
 	
 	#set the mode of the pins that control the camera stepper################
-    def SetModeCamera):
+    def SetupCamera(self):
 		try:
 		gpio.setup(pin29, gpio.OUT)
 		gpio.setup(pin31, gpio.OUT)
@@ -41,53 +42,53 @@ class gpioControl:
 			print("Camera pins setup as output has failed.")
 		else:
 			print("Camera pins succefuly setep up as output!")
-			
-	#########################################################################
+
 	#self explanatory########################################################
-	def step1(pin1, pin2, pin3, pin4):
-		GPIO.output(pin1, LOW)
-		GPIO.output(pin2, HIGH)
-		GPIO.output(pin3, HIGH
-		GPIO.output(pin4, LOW)
+	def step1(self, pin1, pin2, pin3, pin4):
+		GPIO.output(pin1, gpio.LOW)
+		GPIO.output(pin2, gpio.HIGH)
+		GPIO.output(pin3, gpio.HIGH
+		GPIO.output(pin4, gpio.LOW)
 	
-	def step2(pin1, pin2, pin3, pin4):
-		GPIO.output(pin1, LOW)
-		GPIO.output(pin2, HIGH)
-		GPIO.output(pin3, LOW)
-		GPIO.output(pin4, HIGH)
+	def step2(self, pin1, pin2, pin3, pin4):
+		GPIO.output(pin1, gpio.LOW)
+		GPIO.output(pin2, gpio.HIGH)
+		GPIO.output(pin3, gpio.LOW)
+		GPIO.output(pin4, gpio.HIGH)
 
-	def step3(pin1, pin2, pin3, pin4):
-		GPIO.output(pin1, HIGH)
-		GPIO.output(pin2, LOW)
-		GPIO.output(pin3, LOW)
-		GPIO.output(pin4, HIGH)
+	def step3(self, pin1, pin2, pin3, pin4):
+		GPIO.output(pin1, gpio.HIGH)
+		GPIO.output(pin2, gpio.LOW)
+		GPIO.output(pin3, gpio.LOW)
+		GPIO.output(pin4, gpio.HIGH)
+
 	def step4(pin1, pin2, pin3, pin4):
-		GPIO.output(pin1, HIGH)
-		GPIO.output(pin2, LOW)
-		GPIO.output(pin3, HIGH)
-		GPIO.output(pin4, LOW)
+		GPIO.output(pin1, gpio.HIGH)
+		GPIO.output(pin2, gpio.LOW)
+		GPIO.output(pin3, gpio.HIGH)
+		GPIO.output(pin4, gpio.LOW)
 	
-	def sequenceLeft(pin1, pin2, pin3, pin4):
+	def sequenceLeft(self, pin1, pin2, pin3, pin4):
 		step1(pin1, pin2, pin3, pin4)
 		step2(pin1, pin2, pin3, pin4)
 		step3(pin1, pin2, pin3, pin4)
 		step4(pin1, pin2, pin3, pin4)
 
-    def sequenceRight(pin1, pin2, pin3, pin4):
+    def sequenceRight(self, pin1, pin2, pin3, pin4):
 		step4(pin1, pin2, pin3, pin4)
 		step3(pin1, pin2, pin3, pin4)
 		step2(pin1, pin2, pin3, pin4)
 		step1(pin1, pin2, pin3, pin4)
 
-    def fullReset(pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8):
-		GPIO.output(pin1, LOW)
-		GPIO.output(pin2, LOW)
-		GPIO.output(pin3, LOW)
-		GPIO.output(pin4, LOW)
-		GPIO.output(pin5, LOW)
-		GPIO.output(pin6, LOW)
-		GPIO.output(pin7, LOW)
-		GPIO.output(pin8, LOW)
+    def fullReset(self, pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8):
+		GPIO.output(pin1, gpio.LOW)
+		GPIO.output(pin2, gpio.LOW)
+		GPIO.output(pin3, gpio.LOW)
+		GPIO.output(pin4, gpio.LOW)
+		GPIO.output(pin5, gpio.LOW)
+		GPIO.output(pin6, gpio.LOW)
+		GPIO.output(pin7, gpio.LOW)
+		GPIO.output(pin8, gpio.LOW)
 ##GPIO CLASS END################################################################################################
 
 ##IMAGE PROCESSING CLASS##########################################################################################
@@ -186,6 +187,7 @@ class processingImage:
 
 #MAIN FUNCTION#############################################################################################################
 procImg = processingImage()
+gpioC = gpioControl()
 #the pins that that control the coils of the base stepper
 pin11 = 11
 pin12 = 12
@@ -212,41 +214,52 @@ cv.setMouseCallback('Image',clickMouse)
 
 ##this gives the signal sequences for the base stepper
 def trackXpos(pin11, pin12, pin13, pin15):
-    if (procImg.xcenter < procImg.posX):
-        gpio.sequenceLeft(pin11, pin12, pin13, pin15)
-    elif (procImg.xcenter > procImg.posX):
-        gpio.sequenceRight(pin11, pin12, pin13, pin15)
+    if procImg.xcenter < procImg.posX:
+        gpioC.sequenceLeft(pin11, pin12, pin13, pin15)
+    elif procImg.xcenter > procImg.posX:
+        gpioC.sequenceRight(pin11, pin12, pin13, pin15)
     else:
         print("Target X located")
 ##same shit as above but for the camera stepper
 def trackYpos(pin29, pin31, pin33, pin35):
     if procImg.ycenter < procImg.posY:
-        gpio.sequenceLeft(pin29, pin31, pin33, pin35)
+        gpioC.sequenceLeft(pin29, pin31, pin33, pin35)
     elif procImg.ycenter > procImg.posY:
-        gpio.sequenceRight(pin11, pin12, pin13, pin15)
+        gpioC.sequenceRight(pin11, pin12, pin13, pin15)
     else:
         print("Target Y located")
 
-#Threading:
-#Thread1 tracks the object. trackObject takes no arguments
-Thread1 = thr.Thread(target = procImg.trackObject, args=())
-#Thread2: this thread controls the x stepper
-Thread2 = thr.Thread(target=trackXpos, args=(pin11,pin12,pin13,pin15))
-#Thread3: this thread controls the y stepper
-Thread3 = thr.Thread(target=trackXpos, args=(pin29,pin31,pin33,pin35))
-#the forth thread will do the rest
-
-while (cv.waitKey(10) != 27):
+def ImageProcesing():
     procImg.setImg()
     procImg.morph()
-    Thread1.start()
+    procImg.trackObject()
     procImg.drawObject()
+
+
+def display():
     frame = procImg.img
     frameHSV = procImg.imgHSV
     frameThr = procImg.imgThreshold
-    Thread2.start()
-    Thread3.start()
     cv.imshow("Image", frame)
     cv.imshow("Image HSV", frameHSV)
     cv.imshow("Image Threshold", frameThr)
+
+#Threading:
+#Thread1 tracks the object. trackObject takes no arguments
+Thread1 = thr.Thread(target = ImageProcesing, args=())
+#Thread2: this thread controls the x stepper
+Thread2 = thr.Thread(target=trackXpos, args=(pin11, pin12, pin13, pin15))
+#Thread3: this thread controls the y stepper
+Thread3 = thr.Thread(target=trackXpos, args=(pin29, pin31, pin33, pin35))
+#the forth thread will do the rest
+Thread4 = thr.Thread(target=display, args=())
+
+while (cv.waitKey(10) != 27):
+
+    Thread1.start()
+    Thread2.start()
+    Thread3.start()
+    Thread4.start()
+
+    gpioC.fullReset(pin11, pin12, pin13, pin15, pin29, pin31, pin33, pin35)
 ##MAIN FUNCTION END################################################################################################
